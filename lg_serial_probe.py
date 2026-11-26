@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+# SPDX-License-Identifier: MIT
 """Connectivity probe for an LG monitor's RS-232C control port.
 
 Protocol: ASCII, 9600 bps, 8N1, no parity, 1 stop bit (LG manual,

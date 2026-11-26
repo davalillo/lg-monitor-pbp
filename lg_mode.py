@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+# SPDX-License-Identifier: MIT
 """Switch an LG 43UD79 between display scenarios, by intent.
 
 A profile says WHAT you want, never HOW it is done:

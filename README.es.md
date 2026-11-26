@@ -2,6 +2,13 @@
 
 [English](README.md) · **Español**
 
+![License: MIT](https://img.shields.io/badge/license-MIT-yellow.svg)
+![Python 3.11+](https://img.shields.io/badge/python-3.11%2B-blue.svg)
+![Platform: Linux / Wayland](https://img.shields.io/badge/platform-Linux%20%7C%20Wayland-informational.svg)
+![Compositor: niri](https://img.shields.io/badge/compositor-niri-informational.svg)
+![Tested on: LG 43UD79-B](https://img.shields.io/badge/tested%20on-LG%2043UD79--B-brightgreen.svg)
+![Status: alpha](https://img.shields.io/badge/status-alpha-orange.svg)
+
 Cambia un monitor LG entre **Picture-by-Picture (PBP)** y **pantalla completa**
 con un solo comando, y haz que el compositor lo acompañe.
 
