@@ -1,5 +1,7 @@
 # lg-monitor-pbp
 
+**English** · [Español](README.es.md)
+
 Switch an LG monitor between **Picture-by-Picture (PBP)** and **full screen** with
 one command, and make the compositor follow.
 
@@ -31,16 +33,136 @@ write-only, so no tool can even read which layout you are in.
 
 ## Hardware
 
-| Part | Notes |
-|---|---|
-| USB to RS-232 adapter | Tested with a Prolific PL2303 (`067b:2303`) |
-| **Null-modem** adapter | **Required.** The LG manual says "use a crossed (reverse) cable". A straight gender changer produces complete silence: the monitor answers nothing at all |
-| LG service cable | DB9 male to 3.5 mm jack (4-pole) |
-| Monitor | RS-232C control enabled, set ID 1 (the default) |
+### Device under control
 
-The serial port is not enough on its own, and the failure mode of a missing
-null-modem is indistinguishable from a broken adapter: no reply, no error. If you
-get silence, suspect the crossover first.
+- **Monitor:** LG 43UD79 (verified on a 43UD79-B, 4K, firmware 3.48).
+- **Control interface:** RS-232C over LG's proprietary 3.5 mm jack (4-contact TRRS).
+- **Set ID:** `01`. With any other ID the monitor ignores every frame silently.
+- **Goal:** drive the PBP/PIP mode over RS-232 and switch between the two-input
+  split and a single full-screen 4K input.
+
+### Cables and adapters
+
+| Component | Model / reference | Role |
+|---|---|---|
+| LG original RS-232 cable | **EAD62707902** | LG-specific cable: 3.5 mm 4-contact TRRS jack on one end, DB9 **male** on the other |
+| USB-to-serial adapter | **Prolific PL2303** (`067b:2303`) | USB to RS-232. This is the one in the verified assembly |
+| USB-to-serial adapter, alternative | **FTDI FT232R** (`0403:6001`) | Second adapter used during early testing; not part of the verified chain |
+| DB9 gender changer | **Female-female**, straight-through | Joins the USB adapter's DB9 male to the LG cable's DB9 male. **It crosses nothing** |
+| Null-modem adapter | DB9, crossed | **The part that makes it work.** Crosses TX/RX (pins 2 and 3) |
+
+No level shifting is involved: the LG service jack expects real RS-232 levels and
+the USB adapter produces them. A TTL adapter would not work here.
+
+### Physical connection
+
+```text
+PC (CachyOS)
+    │
+    └── USB
+         │
+         └── USB-RS232 adapter (PL2303)
+              │ DB9 male
+              │
+              └── DB9 female-female gender changer   (straight-through)
+                   │
+                   └── NULL-MODEM adapter            (crosses TX/RX)  ← required
+                        │
+                        └── LG cable EAD62707902
+                             │ TRRS 3.5 mm jack
+                             │
+                             └── LG 43UD79 (SERVICE / RS-232C)
+```
+
+### Serial parameters
+
+| Parameter | Value |
+|---|---|
+| Device | `/dev/ttyUSB0` (`/dev/serial/by-id/usb-067b_2303-if00-port0` for the verified adapter) |
+| Baud rate | 9600 |
+| Data bits | 8 |
+| Parity | none |
+| Stop bits | 1 |
+| Flow control | none |
+
+### Pin mapping: what is known and what is not
+
+The monitor manual requires a *crossed / reverse* cable. The pinout of the LG
+`EAD62707902` cable is not publicly documented, and it was never confirmed whether
+that cable crosses TX/RX internally.
+
+That question is now settled **empirically**, which is stronger than a datasheet:
+
+- With only the straight female-female coupler in the chain, the monitor never
+  answered a single frame: no reply, no error, nothing in the kernel log.
+- Adding the null-modem adapter produced replies immediately and every command
+  since has been acknowledged.
+
+Since those two configurations differ only by the crossover, the USB adapter and
+the LG cable together did **not** cross TX/RX: the crossover has to be added
+externally for this monitor.
+
+A loopback test was also run — bridging the jack's tip and first ring returns the
+transmitted bytes. That proves the adapter's TX/RX pair and the continuity of the
+chain, but on its own it does not prove the role of each signal, which is why the
+null-modem conclusion rests on the before/after comparison above.
+
+### Video paths
+
+Which cable feeds which input matters, because the two paths are not equivalent:
+
+| Cable | Monitor input | Maximum |
+|---|---|---|
+| Laptop's rear HDMI | HDMI-4 (upper half) | **3840x2160 @ 60 Hz** |
+| USB-C hub | HDMI-3 (lower half) | 3840x2160 @ 30 Hz (HDMI 1.4 link) |
+
+```text
+            ┌──────────────── laptop ────────────────┐
+            │                                        │
+       rear HDMI                              USB-C hub
+            │                                        │
+            │ HDMI 2.0 → 4K60                        │ HDMI 1.4 → 4K30
+            ▼                                        ▼
+   ┌──────────────── LG 43UD79-B ─────────────────────────┐
+   │   HDMI-4  (upper window)      HDMI-3  (lower window) │
+   └──────────────────────────────────────────────────────┘
+```
+
+This is why `full` always targets the rear HDMI input: reaching 4K60 through the
+hub is a hardware impossibility, not a configuration mistake. The `links` table in
+the configuration encodes exactly this wiring.
+
+### Monitor settings used
+
+- **RS-232C control enabled, set ID = 1** (factory default).
+- `HDMI ULTRA HD Deep Color` was set to **On** along the way. It made no measurable
+  difference on the hub path, and the rear HDMI negotiated 4K60 regardless, so
+  treat it as unrelated rather than required.
+
+### Commissioning procedure
+
+If nothing replies, work through this in order. Each step isolates one link.
+
+```bash
+# 1. Is the adapter there?
+ls -l /dev/serial/by-id/
+dmesg | tail -5
+
+# 2. Does the cable reach the monitor at all?  Bridge the jack's tip and first
+#    ring (a paperclip will do) and send anything: returning bytes prove the
+#    whole chain, TX and RX included, works.
+
+# 3. Does the monitor parse frames?  Any reply proves it, even a rejection:
+#    "a 01 NG ff" means the link is fine and the command was understood.
+python3 lg_serial_probe.py --command ka --data ff
+
+# 4. Full probe: link status plus one idempotent command.
+python3 lg_serial_probe.py
+```
+
+**The most likely failure**: no null-modem in the chain. The symptom is complete
+silence — no reply, no error, nothing in the kernel log — which is
+indistinguishable from a dead adapter or a wrong set ID. Check the crossover first.
 
 ## Install
 
