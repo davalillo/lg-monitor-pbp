@@ -1,0 +1,11 @@
+# Build and local junk
+__pycache__/
+*.pyc
+*.pyo
+
+# The LG manual used during development is copyrighted and should not be
+# redistributed; keep any local copy out of the repository.
+*.pdf
+
+# Local tooling metadata
+.atl/

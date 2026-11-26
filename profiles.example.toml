@@ -1,0 +1,74 @@
+# Configuración de lg-mode — plantilla
+#
+# Copia este fichero a:
+#     ~/.config/lg-mode/profiles.toml
+# (o a $XDG_CONFIG_HOME/lg-mode/profiles.toml si defines esa variable)
+#
+# Un perfil declara INTENCIÓN: qué disposición quieres y qué entrada en cada
+# ventana. El programa deduce de ahí las tramas serie del monitor, los modos,
+# el re-sondeo de salidas y la convergencia frente a DMS.
+#
+# No escribas comandos del monitor aquí. Si algo no se puede deducir, es un
+# fallo del programa, no de tu configuración.
+#
+# Entradas válidas: hdmi-1, hdmi-2, hdmi-3, hdmi-4, displayport, usb-c
+
+# Cableado físico: qué salida del compositor alimenta qué entrada del monitor.
+# Es el único conocimiento que el programa no puede averiguar solo.
+[links]
+"HDMI-A-5" = "hdmi-4"   # HDMI trasera del portátil
+"DP-3"     = "hdmi-3"   # hub USB-C
+
+# Posiciones: por defecto NO se tocan.
+# Las posee la configuración de pantallas de tu escritorio (DMS las escribe y
+# las reaplica), y contradecirlas haría oscilar la disposición. El programa
+# cambia modos y enciende o apaga salidas; dónde queda cada una lo decides tú
+# en DMS.
+#
+# Las posiciones se copian de la configuración de DMS: así el programa afirma
+# la misma disposición que tu escritorio y ninguna salida queda en colocación
+# automática (de ahí salían los workspaces en x=5888).
+#
+#   positions_from = "~/.config/niri/dms/outputs.kdl"
+#
+# Si algún día quieres que el programa coloque el bloque por su cuenta:
+#     origin = [2048, 0]     # esquina superior izquierda del bloque
+#     anchor = "center"      # center | top | bottom (solo si no hay origin)
+#
+# Segundos de vigilancia después de cambiar: el escritorio reaplica su perfil
+# durante el cambio de EDID y conviene corregirlo en el momento.
+#     guard_seconds = 20
+[layout]
+
+# Un único lienzo con una entrada a pantalla completa.
+# El modo lo elige el programa: el mayor refresco que anuncie ese enlace.
+# Aviso: solo la HDMI trasera llega a 4K60; el hub se queda en 4K30.
+[profiles.full]
+layout = "single"
+input  = "hdmi-4"
+
+# Dos ventanas simultáneas del monitor.
+#   arrange = "vertical"   -> apiladas (apartados: top / bottom)
+#   arrange = "horizontal" -> lado a lado (apartados: left / right)
+[profiles.pbp]
+layout  = "pbp"
+arrange = "vertical"
+top     = "hdmi-3"
+bottom  = "hdmi-4"
+
+# Ejemplo de escenario nuevo: no hace falta tocar código.
+# [profiles.pbp-lado-a-lado]
+# layout  = "pbp"
+# arrange = "horizontal"
+# left    = "hdmi-3"
+# right   = "hdmi-4"
+
+# Imagen en imagen: el monitor compone la solapa sobre la base.
+#   corner = top-left | top-right | bottom-left | bottom-right
+#   size   = small | medium | large
+# [profiles.pip]
+# layout  = "pip"
+# base    = "hdmi-3"
+# overlay = "hdmi-4"
+# corner  = "bottom-right"
+# size    = "large"
