@@ -8,6 +8,8 @@
 ![Compositor: niri](https://img.shields.io/badge/compositor-niri-informational.svg)
 ![Tested on: LG 43UD79-B](https://img.shields.io/badge/tested%20on-LG%2043UD79--B-brightgreen.svg)
 ![Status: alpha](https://img.shields.io/badge/status-alpha-orange.svg)
+![CI](https://github.com/davalillo/lg-monitor-pbp/actions/workflows/ci.yml/badge.svg)
+![Version](https://img.shields.io/github/v/release/davalillo/lg-monitor-pbp)
 
 Switch an LG monitor between **Picture-by-Picture (PBP)** and **full screen** with
 one command, and make the compositor follow.
@@ -186,6 +188,12 @@ ln -s "$PWD/lg_mode.py" ~/.local/bin/lg-mode
 # create your configuration from the annotated template
 mkdir -p ~/.config/lg-mode
 cp profiles.example.toml ~/.config/lg-mode/profiles.toml
+```
+
+Or install it as a command instead of symlinking:
+
+```bash
+uv tool install .   # pipx install . also works
 ```
 
 ## Configure

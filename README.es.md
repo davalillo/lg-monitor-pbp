@@ -8,6 +8,8 @@
 ![Compositor: niri](https://img.shields.io/badge/compositor-niri-informational.svg)
 ![Tested on: LG 43UD79-B](https://img.shields.io/badge/tested%20on-LG%2043UD79--B-brightgreen.svg)
 ![Status: alpha](https://img.shields.io/badge/status-alpha-orange.svg)
+![CI](https://github.com/davalillo/lg-monitor-pbp/actions/workflows/ci.yml/badge.svg)
+![Version](https://img.shields.io/github/v/release/davalillo/lg-monitor-pbp)
 
 Cambia un monitor LG entre **Picture-by-Picture (PBP)** y **pantalla completa**
 con un solo comando, y haz que el compositor lo acompañe.
@@ -193,6 +195,12 @@ ln -s "$PWD/lg_mode.py" ~/.local/bin/lg-mode
 # crea tu configuración a partir de la plantilla comentada
 mkdir -p ~/.config/lg-mode
 cp profiles.example.toml ~/.config/lg-mode/profiles.toml
+```
+
+O instálalo como comando en lugar de enlazarlo:
+
+```bash
+uv tool install .   # pipx install . también sirve
 ```
 
 ## Configuración

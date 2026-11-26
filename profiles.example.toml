@@ -33,7 +33,6 @@
 #
 # Si algún día quieres que el programa coloque el bloque por su cuenta:
 #     origin = [2048, 0]     # esquina superior izquierda del bloque
-#     anchor = "center"      # center | top | bottom (solo si no hay origin)
 #
 # Segundos de vigilancia después de cambiar: el escritorio reaplica su perfil
 # durante el cambio de EDID y conviene corregirlo en el momento.

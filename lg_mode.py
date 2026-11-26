@@ -37,8 +37,8 @@ from __future__ import annotations
 
 import argparse
 import json
-import re
 import os
+import re
 import subprocess
 import sys
 import time
@@ -150,7 +150,7 @@ def monitor(command: str, data: str, what: str) -> None:
 
 
 def niri(*args: str) -> str:
-    result = subprocess.run(["niri", "msg", *args], capture_output=True, text=True)
+    result = subprocess.run(["niri", "msg", *args], capture_output=True, text=True, check=False)
     output = (result.stdout + result.stderr).strip()
     if result.returncode != 0:
         raise Failure(f"niri msg {' '.join(args)} falló: {output}")
@@ -158,7 +158,9 @@ def niri(*args: str) -> str:
 
 
 def outputs() -> dict:
-    result = subprocess.run(["niri", "msg", "-j", "outputs"], capture_output=True, text=True)
+    result = subprocess.run(
+        ["niri", "msg", "-j", "outputs"], capture_output=True, text=True, check=False
+    )
     if result.returncode != 0:
         raise Failure(f"no se pudo leer el estado de niri: {result.stderr.strip()}")
     return json.loads(result.stdout)
@@ -331,7 +333,7 @@ def load_config(path: Path) -> dict:
     links = data.get("links") or {}
     if not links:
         raise Failure("la configuración no declara [links]: sin el cableado no puedo deducir nada")
-    for output, monitor_input in links.items():
+    for monitor_input in links.values():
         if str(monitor_input).lower() not in INPUT_CODES:
             valid = ", ".join(sorted(INPUT_CODES))
             raise Failure(f"entrada desconocida «{monitor_input}» en [links]; válidas: {valid}")
@@ -458,18 +460,6 @@ def declared_positions(path: Path | None = None) -> dict[str, tuple[int, int] | 
     return result
 
 
-def block_origin(state: dict, total_height: int, anchor: str) -> tuple[int, int]:
-    laptop = logical(LAPTOP_OUTPUT, state) or {"x": 0, "y": 0, "width": 1920, "height": 1080}
-    x = laptop["x"] + laptop["width"]
-    if anchor == "top":
-        y = laptop["y"]
-    elif anchor == "bottom":
-        y = laptop["y"] + laptop["height"] - total_height
-    else:
-        y = laptop["y"] + laptop["height"] // 2 - total_height // 2
-    return x, y
-
-
 def build_desired(
     plan: Plan, config: dict, state: dict, pre_state: dict | None = None
 ) -> dict[str, tuple[str, tuple[int, int] | None] | None]:
@@ -490,7 +480,6 @@ def build_desired(
     manage_positions = "origin" in layout_config
     positions_source = Path(layout_config.get("positions_from", str(DMS_PROFILE))).expanduser()
     declared = {} if manage_positions else declared_positions(positions_source)
-    anchor = str(layout_config.get("anchor", "center")).lower()
     heights = [modes[o]["height"] for o in plan.participants]
     widths = [modes[o]["width"] for o in plan.participants]
 

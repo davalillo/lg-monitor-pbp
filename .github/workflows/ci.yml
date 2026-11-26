@@ -1,0 +1,56 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  check:
+    name: python ${{ matrix.python-version }}
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: ["3.11", "3.12", "3.13"]
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+
+      - name: Install tooling
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install pyserial ruff build
+
+      - name: Lint
+        run: ruff check .
+
+      - name: Byte-compile the sources
+        run: python -m compileall -q lg_mode.py lg_serial_probe.py
+
+      - name: Validate the example configuration
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+
+          import lg_mode
+
+          config = lg_mode.load_config(Path("profiles.example.toml"))
+          assert config["profiles"], "the example must ship profiles"
+          for name in config["profiles"]:
+              plan = lg_mode.resolve_plan(name, config)
+              assert plan.monitor, f"{name}: no monitor frames derived"
+              assert plan.outputs, f"{name}: no compositor outputs derived"
+              print(f"{name}: {len(plan.monitor)} frame(s) -> {plan.outputs}")
+          PY
+
+      - name: Build the wheel and smoke-test the entry point
+        run: |
+          python -m build
+          python -m pip install dist/*.whl
+          cd /tmp
+          lg-mode --help > /dev/null
+          python -c "import lg_mode, lg_serial_probe; print('imports ok')"

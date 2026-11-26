@@ -9,3 +9,6 @@ __pycache__/
 
 # Local tooling metadata
 .atl/
+dist/
+build/
+*.egg-info/
