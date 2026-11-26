@@ -293,6 +293,12 @@ Measured, not assumed:
 - The monitor must be reachable over serial; the tool does not fall back to
   DDC/CI, because DDC/CI cannot arrange the panel at all.
 
+## Contributing
+
+See [CONTRIBUTING.md](CONTRIBUTING.md). If your monitor is not an LG 43UD79-B,
+please open a **Model compatibility report** — what your monitor answers is worth
+more than whether it "works".
+
 ## Not affiliated with LG
 
 Unofficial project, not endorsed by or affiliated with LG Electronics. The LG

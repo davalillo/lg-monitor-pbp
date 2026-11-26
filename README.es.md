@@ -305,6 +305,12 @@ Medido, no supuesto:
 - El monitor tiene que ser accesible por serie; la herramienta no recurre a
   DDC/CI, porque DDC/CI no puede reorganizar el panel en absoluto.
 
+## Contribuir
+
+Ver [CONTRIBUTING.md](CONTRIBUTING.md). Si tu monitor no es un LG 43UD79-B, abre un
+**Model compatibility report**: lo que responde tu monitor vale más que si
+«funciona».
+
 ## Sin relación con LG
 
 Proyecto no oficial, no respaldado por LG Electronics ni afiliado a la empresa. El

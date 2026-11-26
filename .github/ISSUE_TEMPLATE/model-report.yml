@@ -1,0 +1,127 @@
+name: Model compatibility report
+description: Tell us whether lg-monitor-pbp works on your LG monitor, and what the monitor answers
+title: "[model] "
+labels: ["hardware-report"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        This project was measured on a single monitor, an LG 43UD79-B. Every other
+        model is unverified, and the LG family manual says each model implements a
+        subset of the commands.
+
+        The most valuable thing you can provide is **what the monitor answers**, not
+        whether it "works". A rejected command (`NG`) is just as useful as an
+        accepted one (`OK`).
+
+        Reports in English or Spanish are both welcome.
+
+  - type: input
+    id: model
+    attributes:
+      label: Monitor model
+      description: From the label on the back, or Settings -> General -> Information in the monitor menu
+      placeholder: LG 43UD79-B
+    validations:
+      required: true
+
+  - type: input
+    id: firmware
+    attributes:
+      label: Firmware / software version
+      description: Shown in the monitor's own menu, if it reports one
+      placeholder: "3.48"
+
+  - type: input
+    id: setid
+    attributes:
+      label: Set ID
+      description: The monitor's set ID in its RS-232C settings (the default is 1)
+      placeholder: "1"
+
+  - type: dropdown
+    id: adapter
+    attributes:
+      label: USB-serial adapter
+      options:
+        - Prolific PL2303 (067b:2303)
+        - FTDI FT232R (0403:6001)
+        - CH340 / CH341
+        - Other (described below)
+    validations:
+      required: true
+
+  - type: checkboxes
+    id: chain
+    attributes:
+      label: Serial chain
+      description: These are the usual causes of complete silence
+      options:
+        - label: My chain includes a null-modem (crossed) adapter
+          required: true
+        - label: The monitor answers at least one command (any ACK, including NG)
+          required: true
+
+  - type: textarea
+    id: probe
+    attributes:
+      label: Probe output
+      description: |
+        Run the probe and paste the result. See CONTRIBUTING.md for what to capture.
+      placeholder: |
+        $ python3 lg_serial_probe.py
+        port      : /dev/ttyUSB0
+        ...
+      render: shell
+    validations:
+      required: true
+
+  - type: textarea
+    id: frames
+    attributes:
+      label: Individual commands and answers
+      description: |
+        One line per frame you tried, with the monitor's exact reply. Keep the
+        original bytes: they are the evidence.
+      placeholder: |
+        kn 01 00 -> "n 01 OK 00"
+        kn 01 01 -> "n 01 OK 01"
+        kn 01 02 -> "n 01 OK 02"
+        xb 01 92 -> "b 01 OK 92"
+        xc 01 93 -> "c 01 OK 93"
+        kd 01 00 -> "d 01 NG 00"
+      render: shell
+    validations:
+      required: true
+
+  - type: checkboxes
+    id: layouts
+    attributes:
+      label: Which layouts work on your monitor
+      options:
+        - label: Full screen on one input (`layout = "single"`)
+        - label: Two windows stacked (`arrange = "vertical"`)
+        - label: Two windows side by side (`arrange = "horizontal"`)
+        - label: Picture-in-picture (`layout = "pip"`)
+        - label: "`lg-mode doctor` corrects the layout"
+
+  - type: dropdown
+    id: compositor
+    attributes:
+      label: Compositor
+      options:
+        - niri
+        - Another wlroots compositor (sway, Hyprland, ...)
+        - Other (described below)
+        - Not applicable, serial only
+    validations:
+      required: true
+
+  - type: textarea
+    id: notes
+    attributes:
+      label: Anything else
+      description: |
+        Cabling oddities, the EDID of your panel, warnings in the journal, or what
+        you had to change to make it work. If a command behaves differently from
+        what the README documents, say so — that is exactly the finding we want.
